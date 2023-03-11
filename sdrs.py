@@ -1,9 +1,20 @@
 def smart_device_budget():
     # input from the user
-    size_of_house = int(input("Enter the size of the house (in square feet): "))
     num_rooms = int(input("Enter the number of Bedrooms: "))
+    room_areas = []
+    for i in range(num_rooms):
+        area = int(input("Enter the area of Bedroom {} (in square feet): ".format(i + 1)))
+        room_areas.append(area)
     num_kitchens = int(input("Enter the number of kitchens: "))
+    kitchen_areas = []
+    for i in range(num_kitchens):
+        area = int(input("Enter the area of Kitchen {} (in square feet): ".format(i + 1)))
+        kitchen_areas.append(area)
     num_bathrooms = int(input("Enter the number of bathrooms: "))
+    bathroom_areas = []
+    for i in range(num_bathrooms):
+        area = int(input("Enter the area of Bathroom {} (in square feet): ".format(i + 1)))
+        bathroom_areas.append(area)
     sockets_per_room = []
     for i in range(num_rooms + num_kitchens + num_bathrooms):
         sockets = int(input("Enter the number of sockets in room {}: ".format(i + 1)))
@@ -24,43 +35,49 @@ def smart_device_budget():
         "Smart Mirror": {"Power": 10, "Room": "Bathroom", "Area": 2}
     }
 
+    # total area of the house
+    total_area = sum(room_areas) + sum(kitchen_areas) + sum(bathroom_areas)
+
     # total number of sockets in the house
     total_sockets = sum(sockets_per_room)
-
-    # total area occupied by the sockets
-    total_area = total_sockets * 2  # assuming 2 square feet for each socket
 
     # max amount of each type of device that can be installed
     max_devices = {}
     for device, specs in device_types.items():
         if specs["Room"] == "All":
-            max_devices[device] = int((size_of_house - total_area) / specs["Area"])
+            max_devices[device] = int((total_area * 0.2 - total_sockets * 2) / specs["Area"])
         elif specs["Room"] == "Kitchen":
-            max_devices[device] = int((num_kitchens * sockets_per_room[-(num_bathrooms + num_kitchens + 1)] * (
-                    size_of_house - total_area)) / (specs["Power"] * specs["Area"]))
+            max_devices[device] = int(
+                (sum(kitchen_areas) * 0.2 - num_kitchens * sockets_per_room[-(num_bathrooms + num_kitchens + 1)] * 2) /
+                specs["Area"])
         elif specs["Room"] == "Bathroom":
-            max_devices[device] = int((num_bathrooms * sockets_per_room[-1] * (size_of_house - total_area)) / (
+            max_devices[device] = int((num_bathrooms * sockets_per_room[-1] * (total_area - sum(room_areas))) / (
                     specs["Power"] * specs["Area"]))
         elif specs["Room"] == "Bedroom":
-            max_devices[device] = int((num_rooms * sum(sockets_per_room[:num_rooms]) * (size_of_house - total_area)) / (
-                    specs["Power"] * specs["Area"]))
+            max_devices[device] = int((num_rooms * sum(sockets_per_room[:num_rooms]) * (
+                    total_area - sum(kitchen_areas) - sum(bathroom_areas))) / (
+                                              specs["Power"] * specs["Area"] * 0.2 * room_areas[:num_rooms].count(
+                                          1)))
 
     # max amount of each type of device that can be installed in each room
+    # Calculate devices per room
     devices_per_room = {}
     for device, specs in device_types.items():
         if specs["Room"] == "All":
-            devices_per_room[device] = int((size_of_house - total_area) / specs["Area"]) // (
+            devices_per_room[device] = int((total_area * 0.2 - total_sockets * 2) / specs["Area"]) // (
                     num_rooms + num_kitchens + num_bathrooms)
         elif specs["Room"] == "Kitchen":
-            devices_per_room[device] = int((num_kitchens * sockets_per_room[-(num_bathrooms + num_kitchens + 1)] * (
-                    size_of_house - total_area)) / (specs["Power"] * specs["Area"])) // num_kitchens
+            devices_per_room[device] = int(
+                (sum(kitchen_areas) * 0.2 - num_kitchens * sockets_per_room[-(num_bathrooms + num_kitchens + 1)] * 2) /
+                specs["Area"]) // num_kitchens
         elif specs["Room"] == "Bathroom":
-            devices_per_room[device] = int((num_bathrooms * sockets_per_room[-1] * (size_of_house - total_area)) / (
+            devices_per_room[device] = int((num_bathrooms * sockets_per_room[-1] * (total_area - sum(room_areas))) / (
                     specs["Power"] * specs["Area"])) // num_bathrooms
         elif specs["Room"] == "Bedroom":
-            devices_per_room[device] = int(
-                (num_rooms * sum(sockets_per_room[:num_rooms]) * (size_of_house - total_area)) / (
-                        specs["Power"] * specs["Area"])) // num_rooms
+            devices_per_room[device] = int((num_rooms * sum(sockets_per_room[:num_rooms]) * (
+                    total_area - sum(kitchen_areas) - sum(bathroom_areas))) / (
+                                                   specs["Power"] * specs["Area"] * 0.2 * room_areas.count(
+                                               1))) // num_rooms
 
     print("Maximum number of smart devices that can be installed in each room:")
     for device, count in devices_per_room.items():
