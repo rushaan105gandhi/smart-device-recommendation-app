@@ -5,7 +5,7 @@ def smart_device_budget():
     for i in range(num_rooms):
         area = int(input("Enter the area of Bedroom {} (in square feet): ".format(i + 1)))
         room_areas.append(area)
-    num_kitchens = int(input("Enter the number of kitchens: "))
+    num_kitchens: int = int(input("Enter the number of kitchens: "))
     kitchen_areas = []
     for i in range(num_kitchens):
         area = int(input("Enter the area of Kitchen {} (in square feet): ".format(i + 1)))
@@ -34,8 +34,6 @@ def smart_device_budget():
         "Smart Oven": {"Power": 40, "Room": "Kitchen", "Area": 10},
         "Smart Mirror": {"Power": 10, "Room": "Bathroom", "Area": 2}
     }
-
-    # total area of the house
     total_area = sum(room_areas) + sum(kitchen_areas) + sum(bathroom_areas)
 
     # total number of sockets in the house
@@ -62,9 +60,10 @@ def smart_device_budget():
     # max amount of each type of device that can be installed in each room
     # Calculate devices per room
     devices_per_room = {}
+
     for device, specs in device_types.items():
         if specs["Room"] == "All":
-            devices_per_room[device] = int((total_area * 0.2 - total_sockets * 2) / specs["Area"]) // (
+            devices_per_room[device] = int((budget * 0.2 - total_sockets * 2) / specs["Area"]) // (
                     num_rooms + num_kitchens + num_bathrooms)
         elif specs["Room"] == "Kitchen":
             devices_per_room[device] = int(
